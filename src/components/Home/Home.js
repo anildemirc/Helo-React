@@ -14,6 +14,7 @@ function Home() {
         .then(res => res.json())
         .then(
             (result) => {
+                console.log("result",result);
                 setIsLoaded(true);
                 setPostList(result);
             },
@@ -41,11 +42,11 @@ function Home() {
                 createTime={0} refreshPosts = {refreshPosts}>
                     
                 </PostForm>
-                {postList.map(post => (
+                {postList.length > 0 ? postList.map(post => (
                     <Post userId={post.userId} username={post.username}
                      createTime={post.createTime} title={post.title} 
-                     text={post.text} postId={post.id}></Post>
-                ))}
+                     text={post.text} postId={post.id} postLikes={post.postLikes}></Post>
+                )): ""}
             </div>
         );
     }
