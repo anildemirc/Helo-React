@@ -1,8 +1,9 @@
 import './App.css';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import NavBar from './components/Navbar/Navbar';
 import Home from './components/Home/Home';
 import User from './components/User/User';
+import Auth from './components/Auth/Auth';
 
 function App() {
   return (
@@ -10,9 +11,9 @@ function App() {
       <BrowserRouter>
         <NavBar></NavBar>
         <Routes>
-          /* Hangi uzantıda hangi component çalışacak onun bilgisini burada veriyoruz */
           <Route exact path='/' element={<Home/>}></Route>
           <Route exact path='/users/:userId' element={<User/>}></Route>
+          <Route exact path='/auth' element= {localStorage.getItem("currentUser") !=null ? <Navigate  to="/"/> :<Auth/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

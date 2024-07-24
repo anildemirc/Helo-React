@@ -27,8 +27,10 @@ function Post(props) {
     const [likeCount, setLikeCount] = React.useState(postLikes.length);
     const [likeId, setLikeId] = React.useState(null);
 
+    let disabled = localStorage.getItem("currentUser") == null ? true : false;
+
     const checkLikes = () => {
-        var likeControl = postLikes.find(like => like.userId === userId);
+        var likeControl = postLikes.find(like => ""+like.userId === localStorage.getItem("currentUser"));
         if(likeControl != null) {
             setLikeId(likeControl.id);
             setIsLiked(true);
@@ -43,10 +45,10 @@ function Post(props) {
     const saveLike = () => {
         fetch("/likes", {
             method: "POST",
-            headers: {"Content-Type":"application/json"},
+            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
             body: JSON.stringify({
                 postId:postId,
-                userId:userId,
+                userId:localStorage.getItem("currentUser"),
             }),
         })
         .then((res) => res.json())
@@ -61,6 +63,7 @@ function Post(props) {
     const deleteLike = () => {
         fetch("/likes/"+likeId , {
             method: "DELETE",
+            headers: {"Authorization":localStorage.getItem("tokenKey")},
         })
         .then((res) => res.json())
         .catch((err) => console.log("error"))
@@ -71,6 +74,7 @@ function Post(props) {
         .then(res => res.json())
         .then(
             (result) => {
+                console.log("result ", result);
                 setIsLoaded(true);
                 setCommentList(result);
                 isInitialMount.current = true;
@@ -123,12 +127,20 @@ function Post(props) {
                     </Typography>
                 </CardContent>
                 <CardActions disableSpacing>
+                    {disabled ? <IconButton 
+                    disabled
+                    onClick={handleLike}
+                    aria-label="add to favorites"
+                    >
+                    <FavoriteIcon className={isLiked? "clr-red": ""}/>
+                    </IconButton>: 
                     <IconButton 
                     onClick={handleLike}
                     aria-label="add to favorites"
                     >
                     <FavoriteIcon className={isLiked? "clr-red": ""}/>
-                    </IconButton>
+                    </IconButton> }
+                    
                     {likeCount}
                     <IconButton
                     expand={expanded}
@@ -139,9 +151,9 @@ function Post(props) {
                 </CardActions>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <Container fixed className=''>
-                        <CommentForm userId = {2} username = {"USER"} postId = {postId} refreshComments={refreshComments}></CommentForm>
+                        {disabled ? "" : <CommentForm userId = {localStorage.getItem("currentUser")} username = {localStorage.getItem("username")} postId = {postId} refreshComments={refreshComments}></CommentForm>}
                         {error? "error" : isLoaded ? commentList.length >0 ? commentList.map(comment => (
-                            <Comment userId = {2} username = {"USER"} text= {comment.text}></Comment>
+                            <Comment userId = {comment.userId} username = {comment.username} text= {comment.text}></Comment>
                         )):null : "Loading"}
                         
                     </Container>

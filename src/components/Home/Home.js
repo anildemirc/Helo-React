@@ -10,11 +10,12 @@ function Home() {
     const [postList, setPostList] = useState([]);
 
     const refreshPosts = () => {
-        fetch("/posts")
+        fetch("/posts", {
+            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
+        })
         .then(res => res.json())
         .then(
             (result) => {
-                console.log("result",result);
                 setIsLoaded(true);
                 setPostList(result);
             },
@@ -38,10 +39,11 @@ function Home() {
     else {
         return(
             <div className="container">
-                <PostForm userId={2} username={"anil"} 
-                createTime={0} refreshPosts = {refreshPosts}>
-                    
-                </PostForm>
+                
+                {localStorage.getItem("currentUser") == null ?"":
+                <PostForm userId={localStorage.getItem("currentUser")} username={localStorage.getItem("username")} 
+                createTime={0} refreshPosts = {refreshPosts}></PostForm>}
+
                 {postList.length > 0 ? postList.map(post => (
                     <Post userId={post.userId} username={post.username}
                      createTime={post.createTime} title={post.title} 

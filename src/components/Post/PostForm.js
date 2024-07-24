@@ -4,7 +4,6 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Snackbar from '@mui/material/Snackbar';
@@ -18,12 +17,11 @@ function PostForm(props) {
     const [text, setText] = React.useState("");
     const [title, setTitle] = React.useState("");
     const [isSent, setIsSent] = React.useState(false);
-    const [open, setOpen] = React.useState(false);
 
     const savePost = () => {
         fetch("/posts", {
             method: "POST",
-            headers: {"Content-Type":"application/json"},
+            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
             body: JSON.stringify({
                 title:title,
                 userId:userId,
@@ -31,6 +29,9 @@ function PostForm(props) {
             }),
         })
         .then((res) => res.json())
+        .then(() => {
+            refreshPosts();
+        })
         .catch((err) => console.log("error"))
     }
 
@@ -40,7 +41,7 @@ function PostForm(props) {
         setIsSent(true);
         setTitle("");
         setText("");
-        refreshPosts();
+        
     };
 
     const handleTitle = (value) => {
@@ -54,7 +55,7 @@ function PostForm(props) {
     }
 
     const snackBarOpen = () => {
-        setOpen(true);
+        setIsSent(true);
       };
 
     const snackBarClose = (event, reason) => {
@@ -62,12 +63,12 @@ function PostForm(props) {
           return;
         }
     
-        setOpen(false);
+        setIsSent(false);
       };
 
     return(
         <div>
-            <Snackbar open={open} autoHideDuration={6000} onClose={snackBarClose}>
+            <Snackbar open={isSent} autoHideDuration={6000} onClose={snackBarClose}>
                 <Alert
                 onClose={snackBarClose}
                 severity="success"

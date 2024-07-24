@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Avatar, Button, CardContent, InputAdornment, OutlinedInput } from "@mui/material";
+import { Avatar, Button, CardContent, CardHeader, InputAdornment, OutlinedInput } from "@mui/material";
 import { Link } from "react-router-dom";
 import "./Comments.scss";
 
@@ -15,14 +15,13 @@ function CommentForm(props) {
     }
 
     const handleChange = (value) => {
-        console.log(value);
         setText(value);
     }
 
     const saveComment = () => {
         fetch("/comments", {
             method: "POST",
-            headers: {"Content-Type":"application/json"},
+            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
             body: JSON.stringify({
                 postId:postId,
                 userId:userId,
@@ -44,11 +43,15 @@ function CommentForm(props) {
             onChange={(i) => handleChange(i.target.value)}
             startAdorment = {
                 <InputAdornment position="start">
-                    <Link to={{pathname : '/users/'+ userId}}>
-                        <Avatar aria-label="recipe" >
-                            {username.charAt(0).toUpperCase()}
-                        </Avatar>
-                    </Link>
+                    <CardHeader
+                    avatar= {
+                        <Link to={{pathname : '/users/'+ userId}}>
+                            <Avatar aria-label="recipe" >
+                                {username.charAt(0).toUpperCase()}
+                            </Avatar>
+                        </Link>
+                    }
+                    />
                 </InputAdornment>
             }
             endAdornment= {

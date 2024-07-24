@@ -7,9 +7,19 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
 import "./Navbar.scss";
+import { LockOpen } from '@mui/icons-material';
+import { useNavigate } from "react-router-dom";
 
 function NavBar() {
-    let userId = 5;
+    let navigate = useNavigate();
+
+    const onClick  = () => {
+        localStorage.removeItem("tokenKey");
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("username");
+        navigate(0);
+    }
+
     return(
         <div>
             <Box sx={{ flexGrow: 1 }}>
@@ -22,9 +32,14 @@ function NavBar() {
                     <Link to="/" className="link">Quest App</Link>
                 </Typography>
                 <Typography variant="h6" component="div">
-                    <Link to={{pathname : '/users/' + userId}} className="link">
-                        User
-                    </Link>
+                    {localStorage.getItem("currentUser") == null ? <Link to="/auth" className="link">Login/Register</Link> :
+                    <div>
+                        <IconButton className="link" onClick={() => onClick()}>
+                            <LockOpen>
+                            </LockOpen>
+                        </IconButton>
+                        <Link to={{pathname : '/users/' + localStorage.getItem("currentUser")}} className="link">Profile</Link>
+                    </div>}
                 </Typography>
                 </Toolbar>
             </AppBar>
