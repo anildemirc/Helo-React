@@ -93,7 +93,9 @@ function Post(props) {
             refreshComments();
     },[commentList]);*/
 
-    React.useEffect(() => {checkLikes()},[]);
+    React.useEffect(() => {
+        checkLikes()
+    },[]);
 
     const handleLike = () => {
         setIsLiked(!isLiked);
