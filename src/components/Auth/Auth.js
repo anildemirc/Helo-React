@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, FormControl, Input, InputLabel, FormHelperText } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { PostWithAuth } from "../../services/HttpService";
 
 
 function Auth() {
@@ -24,24 +25,18 @@ function Auth() {
     }
 
     const sendRequest = (path) => {
-        fetch("/auth/"+path, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({
-                username:username,
-                password:password,
-            }),
-        })
+        PostWithAuth("/auth/"+path, {username:username,password:password})
         .then((res) => res.json())
         .then(
             (result) => {
-                localStorage.setItem("tokenKey",result.message);
+                localStorage.setItem("tokenKey",result.accessToken);
+                localStorage.setItem("refreshKey",result.refreshToken);
                 localStorage.setItem("currentUser",result.userId);
                 localStorage.setItem("username",username)
                 navigate(0);
             }
         )
-        .catch((err) => console.log("error"))
+        .catch((err) => console.log("err", err))
     }
 
     return(
@@ -49,11 +44,13 @@ function Auth() {
             <InputLabel style={{top:10}}>Username</InputLabel>
             <Input 
                 style={{top:10}}
+                value={username}
                 onChange={(i) => handleUsername(i.target.value)}
             />
             <InputLabel style={{top:80}}>Password</InputLabel>
             <Input 
                 style={{top:40}}
+                value={password}
                 onChange={(i) => handlePassword(i.target.value)}
             />
             <Button variant="contained"

@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, CardContent, CardHeader, InputAdornment, OutlinedInput } from "@mui/material";
 import { Link } from "react-router-dom";
-
+import "./Comments.scss"
 
 
 function Comment(props) {
@@ -13,20 +13,16 @@ function Comment(props) {
             id='outlined-adornment-amont'
             multiline
             inputProps={{maxLength : 250}}
-            fullWidth
+            fullWidth   
             value = {text}
             disabled
-            startAdorment = {
+            startAdornment = {
                 <InputAdornment position="start">
-                    <CardHeader
-                    avatar={
-                    <Link to={{pathname : '/users/' + userId}} className='link'>
-                        <Avatar className='bgColor'>
+                    <Link to={{pathname : '/users/'+ userId}} className='link'>
+                        <Avatar aria-label="recipe" className="bgColor">
                             {username.charAt(0).toUpperCase()}
                         </Avatar>
                     </Link>
-                    }
-                />
                 </InputAdornment>
             }
             style = {{color: "black", backgroundColor: "white"}}

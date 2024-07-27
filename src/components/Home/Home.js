@@ -10,9 +10,7 @@ function Home() {
     const [postList, setPostList] = useState([]);
 
     const refreshPosts = () => {
-        fetch("/posts", {
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-        })
+        fetch("/posts", {headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")}})
         .then(res => res.json())
         .then(
             (result) => {

@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
+import { GetWithAuth } from '../../services/HttpService';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -25,10 +26,7 @@ function PopUp(props) {
     const [post, setPost] = useState(null);
 
     const getPost = () => {
-        fetch("/posts/"+ postId, {
-            method: "GET",
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-        })
+        GetWithAuth("/posts/"+ postId)
         .then(res => res.json())
         .then(
             (result) => {
@@ -84,10 +82,7 @@ function UserActivity(props) {
     }
 
     const getActivity = () => {
-        fetch("/users/activity/"+ userId, {
-            method: "GET",
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-        })
+        GetWithAuth("/posts?userId="+userId)
         .then(res => res.json())
         .then(
             (result) => {
@@ -122,11 +117,8 @@ function UserActivity(props) {
                 <TableBody>
                     {rows.map((row) => {
                         return (
-                            <Button onClick={() => {handleNotification(row[1])}}>
-                                <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                                {row[3]+" "+ row[0] +" your post"}
-                                </TableRow>
-                            </Button>
+                            <Post title={row.title} text={row.text} userId={row.userId} username={row.username}
+                            createTime={row.createTime} postId={row.id} postLikes={row.postLikes}/>
                         );
                     })}
                 </TableBody>

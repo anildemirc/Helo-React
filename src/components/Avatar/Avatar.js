@@ -1,4 +1,4 @@
-import {React, useState} from 'react';
+import {React, useEffect, useState} from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -10,7 +10,7 @@ import Modal from '@mui/material/Modal';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListItemSecondaryAction, Radio } from '@mui/material';
-//import { PutWithAuth } from '../../services/HttpService';
+import { DeleteWithAuth, GetWithAuth, PostWithAuth, PutWithAuth } from '../../services/HttpService';
 
 
 
@@ -28,24 +28,52 @@ const style = {
   
 
   function Avatar(props) {
-    const {avatarId} = props;
+    const {avatarId, userId, username, countFollowed} = props;
     const [open, setOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState(avatarId);
-    const [userId, setUserId] = useState(localStorage.getItem("currentUser"));
-    const [username, setUsername] = useState(localStorage.getItem("username"));
+    const [followCount, setFollowCount] = useState(countFollowed)
+    const [following , setFollowing] = useState(null);
   
     const saveAvatar = () => {
-      fetch("/users/"+ localStorage.getItem("currentUser"), {
-          method: "PUT",
-          headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-          body: JSON.stringify({
-            avatar: selectedValue,
-          }),
-      })
+      PutWithAuth("/users/"+ localStorage.getItem("currentUser"), {avatar: selectedValue})
       .then(res => res.json())
       .catch((err) => console.log(err))
     }
+
+    const follow = () => {
+      PostWithAuth("/follow/",{followedId:localStorage.getItem("currentUser") , followerId: selectedValue})
+      .then(res => res.json())
+      .then(() => {
+
+      })
+      .catch((err) => console.log(err))
+    }
+
+    const unfollow = () => {
+      DeleteWithAuth()
+      .then(res => res.json())
+      .then(() => {
+
+      })
+      .catch((err) => console.log(err))
+    }
+
+    const checkFollowing = () => {
+      GetWithAuth("/follow?followedId="+ userId+"&followerId="+localStorage.getItem("currentUser"))
+      .then(res => res.json())
+      .then((result) => {
+        setFollowing(result);
+      })
+      .catch((err) => console.log(err))
+    }
   
+    const handleFollow = () => {
+      follow();
+    }
+
+    const handleUnFollow = () => {
+
+    }
   
     const handleChange = (event) => {
       setSelectedValue(event.target.value);
@@ -59,6 +87,12 @@ const style = {
       setOpen(false);
       saveAvatar();
     };
+
+    useEffect((() => {
+      if(userId+"" !== localStorage.getItem("currentUser")) {
+        checkFollowing(); 
+      }
+    }),[]);
   
     return (
       <div>
@@ -78,9 +112,19 @@ const style = {
             </Typography>
           </CardContent>
         <CardActions>
-          {localStorage.getItem("currentUser") === ""+userId ? <Button size="small" color="primary"  onClick={handleOpen}>
-            Change Avatar
-          </Button> : ""}
+          <div>
+            {localStorage.getItem("currentUser") === ""+userId ? 
+              <Button size="small" color="primary"  onClick={handleOpen}>
+              Change Avatar
+            </Button> : ""}
+            {
+              (localStorage.getItem("currentUser") != undefined && localStorage.getItem("currentUser") != userId) ? 
+              following == undefined ?
+              <Button size="small" color="primary"  onClick={handleFollow}>Follow</Button> : 
+              <Button size="small" color="primary"  onClick={handleUnFollow}>Unfollow</Button> : ""
+            }
+            {followCount} followers
+          </div>
         </CardActions>
       </Card>
       <Modal

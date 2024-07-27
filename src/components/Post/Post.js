@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Container } from '@mui/material';
 import Comment from '../Comment/Comment';
 import CommentForm from '../Comment/CommentForm';
-
+import { DeleteWithAuth, PostWithAuth } from '../../services/HttpService';
 
 function Post(props) {
     const {title, text, userId, username, createTime, postId, postLikes} = props;
@@ -26,9 +26,9 @@ function Post(props) {
     const isInitialMount = React.useRef(true);
     const [likeCount, setLikeCount] = React.useState(postLikes.length);
     const [likeId, setLikeId] = React.useState(null);
-
     let disabled = localStorage.getItem("currentUser") == null ? true : false;
 
+    
     const checkLikes = () => {
         var likeControl = postLikes.find(like => ""+like.userId === localStorage.getItem("currentUser"));
         if(likeControl != null) {
@@ -43,14 +43,7 @@ function Post(props) {
     };
 
     const saveLike = () => {
-        fetch("/likes", {
-            method: "POST",
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-            body: JSON.stringify({
-                postId:postId,
-                userId:localStorage.getItem("currentUser"),
-            }),
-        })
+        PostWithAuth("/likes",{postId:postId, userId:localStorage.getItem("currentUser")})
         .then((res) => res.json())
         .then(
             (result) => {
@@ -61,10 +54,7 @@ function Post(props) {
     }
     
     const deleteLike = () => {
-        fetch("/likes/"+likeId , {
-            method: "DELETE",
-            headers: {"Authorization":localStorage.getItem("tokenKey")},
-        })
+        DeleteWithAuth("/likes/"+likeId)
         .then((res) => res.json())
         .catch((err) => console.log("error"))
     }
@@ -85,13 +75,6 @@ function Post(props) {
             }
         )
     }
-
-    /*React.useEffect(() => {
-        if(isInitialMount.current)
-            isInitialMount.current = false;
-        else
-            refreshComments();
-    },[commentList]);*/
 
     React.useEffect(() => {
         checkLikes()

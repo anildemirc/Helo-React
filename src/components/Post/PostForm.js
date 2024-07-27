@@ -11,6 +11,7 @@ import Alert from '@mui/material/Alert';
 import "./Post.scss";
 import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
+import { PostWithAuth } from '../../services/HttpService';
 
 function PostForm(props) {
     const {userId, username, refreshPosts} = props;
@@ -19,15 +20,7 @@ function PostForm(props) {
     const [isSent, setIsSent] = React.useState(false);
 
     const savePost = () => {
-        fetch("/posts", {
-            method: "POST",
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-            body: JSON.stringify({
-                title:title,
-                userId:userId,
-                text:text,
-            }),
-        })
+        PostWithAuth("/posts",{title:title,userId:userId,text:text})
         .then((res) => res.json())
         .then(() => {
             refreshPosts();
@@ -62,7 +55,6 @@ function PostForm(props) {
         if (reason === 'clickaway') {
           return;
         }
-    
         setIsSent(false);
       };
 

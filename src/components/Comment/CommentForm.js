@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { Avatar, Button, CardContent, CardHeader, InputAdornment, OutlinedInput } from "@mui/material";
 import { Link } from "react-router-dom";
 import "./Comments.scss";
-
+import { PostWithAuth, refreshToken } from "../../services/HttpService";
+import { useNavigate } from "react-router-dom";
 
 function CommentForm(props) {
     const  {userId, username, postId, refreshComments} = props;
     const [text, setText] = useState("");
+    let navigate = useNavigate();
 
     const handleSubmit = () => {
         saveComment();
         setText("");
-        refreshComments();
     }
 
     const handleChange = (value) => {
@@ -19,17 +20,41 @@ function CommentForm(props) {
     }
 
     const saveComment = () => {
-        fetch("/comments", {
-            method: "POST",
-            headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")},
-            body: JSON.stringify({
-                postId:postId,
-                userId:userId,
-                text:text,
-            }),
+        PostWithAuth("/comments",{postId:postId, userId:userId, text:text})
+        .then((res) => {
+            if(res.ok){
+                res.json();
+            }
+            else {
+                refreshToken()
+                .then((res) => {
+                    if(res.ok) {
+                        res.json();
+                    }
+                    else{
+                        localStorage.removeItem("tokenKey");
+                        localStorage.removeItem("currentUser");
+                        localStorage.removeItem("username");
+                        localStorage.removeItem("refreshKey");
+                        navigate(0);
+                    }
+                })
+                .then(
+                (result) => {
+                    if(result != undefined) {
+                        localStorage.setItem("tokenKey",result.accessToken);
+                        saveComment();
+                        refreshComments();
+                    }
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                })
+            }
         })
-        .then((res) => res.json())
-        .catch((err) => console.log("error"))
+        .catch((err) => {
+            console.log("err", err);
+        })
     }
 
 
@@ -41,17 +66,13 @@ function CommentForm(props) {
             inputProps={{maxLength : 250}}
             fullWidth
             onChange={(i) => handleChange(i.target.value)}
-            startAdorment = {
+            startAdornment = {
                 <InputAdornment position="start">
-                    <CardHeader
-                    avatar= {
-                        <Link to={{pathname : '/users/'+ userId}}>
-                            <Avatar aria-label="recipe" >
-                                {username.charAt(0).toUpperCase()}
-                            </Avatar>
-                        </Link>
-                    }
-                    />
+                    <Link to={{pathname : '/users/'+ userId}} className='link'>
+                        <Avatar aria-label="recipe" className="bgColor">
+                            {username.charAt(0).toUpperCase()}
+                        </Avatar>
+                    </Link>
                 </InputAdornment>
             }
             endAdornment= {
