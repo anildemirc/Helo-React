@@ -27,7 +27,6 @@ function Comment(props) {
             }
             style = {{color: "black", backgroundColor: "white"}}
             ></OutlinedInput>
-
         </CardContent>
     );
 }

@@ -22,38 +22,37 @@ function CommentForm(props) {
     const saveComment = () => {
         PostWithAuth("/comments",{postId:postId, userId:userId, text:text})
         .then((res) => {
-            if(res.ok){
-                res.json();
+            if(res.ok) {
+              return res.json();
             }
             else {
-                refreshToken()
-                .then((res) => {
-                    if(res.ok) {
-                        res.json();
-                    }
-                    else{
-                        localStorage.removeItem("tokenKey");
-                        localStorage.removeItem("currentUser");
-                        localStorage.removeItem("username");
-                        localStorage.removeItem("refreshKey");
-                        navigate(0);
-                    }
-                })
-                .then(
-                (result) => {
-                    if(result != undefined) {
-                        localStorage.setItem("tokenKey",result.accessToken);
-                        saveComment();
-                        refreshComments();
-                    }
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                })
+              refreshToken()
+              .then((res) => {
+                if(res.ok) {
+                  return res.json();
+                }
+                else {
+                  localStorage.removeItem("tokenKey");
+                  localStorage.removeItem("currentUser");
+                  localStorage.removeItem("username");
+                  localStorage.removeItem("refreshKey");
+                  navigate(0);
+                  return;
+                }
+              })
+              .then((result) => {
+                if(result != undefined) {
+                  localStorage.setItem("tokenKey", result.accessToken);
+                  saveComment();
+                }
+              })
+              .catch((err) => {
+                console.log("err", err);
+              })
             }
-        })
-        .catch((err) => {
-            console.log("err", err);
+          })
+        .then(() => {
+            refreshComments();
         })
     }
 

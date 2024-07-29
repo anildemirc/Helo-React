@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 function NavBar() {
     let navigate = useNavigate();
-
     const onClick  = () => {
         localStorage.removeItem("tokenKey");
         localStorage.removeItem("currentUser");
@@ -47,8 +46,6 @@ function NavBar() {
             </Box>
         </div>
     );
-
-
 }
 
 export default NavBar;

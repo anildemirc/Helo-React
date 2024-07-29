@@ -6,15 +6,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Post from '../Post/Post';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
-import { GetWithAuth } from '../../services/HttpService';
+import { GetWithoutAuth, refreshToken } from '../../services/HttpService';
+import { useNavigate } from "react-router-dom";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -24,23 +23,18 @@ function PopUp(props) {
     const {isOpen, postId, setIsOpen} = props;
     const [open, setOpen] = useState(false);
     const [post, setPost] = useState(null);
+    let navigate = useNavigate();
 
     const getPost = () => {
-        GetWithAuth("/posts/"+ postId)
-        .then(res => res.json())
-        .then(
-            (result) => {
-                console.log("result PopUp",result);
-                setPost(result);
-            },
-            (error) => {
-                console.log(error);
-            }
-        )
+        GetWithoutAuth("/posts/"+ postId)
+        .then((res) => res.json())
+        .then((result) => {
+            setPost(result);
+        })
+        
     }
 
     const handleClose = () => {
-        console.log("handleClose");
         setOpen(false);
         setIsOpen(false);
     };
@@ -70,11 +64,11 @@ function PopUp(props) {
   
 function UserActivity(props) {
     const {userId}  = props;
-    const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [rows, setRows] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
+    let navigate = useNavigate();
 
     const handleNotification = (postId) => {
         setSelectedPost(postId);
@@ -82,20 +76,13 @@ function UserActivity(props) {
     }
 
     const getActivity = () => {
-        GetWithAuth("/posts?userId="+userId)
+        setIsLoaded(true);
+        GetWithoutAuth("/posts?userId="+userId)
         .then(res => res.json())
-        .then(
-            (result) => {
-                console.log(result);
-                setIsLoaded(true);
-                setRows(result);
-            },
-            (error) => {
-                console.log(error);
-                setIsLoaded(true);
-                setError(error);
-            }
-        )
+        .then((result) => {
+            setRows(result);
+        })
+        
     }
 
     React.useEffect(() => {

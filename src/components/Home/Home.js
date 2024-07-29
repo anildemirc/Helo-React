@@ -2,26 +2,31 @@ import React, {useState, useEffect} from "react";
 import Post from "../Post/Post";
 import "./Home.scss";
 import PostForm from "../Post/PostForm";
+import { GetWithoutAuth, refreshToken } from "../../services/HttpService";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
 
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [postList, setPostList] = useState([]);
+    let navigate = useNavigate();
 
     const refreshPosts = () => {
-        fetch("/posts", {headers: {"Content-Type":"application/json", "Authorization":localStorage.getItem("tokenKey")}})
-        .then(res => res.json())
-        .then(
-            (result) => {
-                setIsLoaded(true);
-                setPostList(result);
-            },
-            (error) => {
+        GetWithoutAuth("/posts")
+        .then((res) => res.json())
+        .then((result) => {
+            if(result === -1) {
                 setIsLoaded(true);
                 setError(error);
             }
-        )
+            else {
+                setIsLoaded(true);
+                setPostList(result);
+            }
+        });
+        
+        
     }
 
     useEffect(() => {
@@ -42,7 +47,7 @@ function Home() {
                 <PostForm userId={localStorage.getItem("currentUser")} username={localStorage.getItem("username")} 
                 createTime={0} refreshPosts = {refreshPosts}></PostForm>}
 
-                {postList.length > 0 ? postList.map(post => (
+                {(postList != undefined && postList.length > 0) ? postList.map(post => (
                     <Post userId={post.userId} username={post.username}
                      createTime={post.createTime} title={post.title} 
                      text={post.text} postId={post.id} postLikes={post.postLikes}></Post>

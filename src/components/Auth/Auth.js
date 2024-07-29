@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, FormControl, Input, InputLabel, FormHelperText } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { PostWithAuth } from "../../services/HttpService";
+import { PostWithoutAuth, refreshToken } from "../../services/HttpService";
 
 
 function Auth() {
@@ -25,19 +25,17 @@ function Auth() {
     }
 
     const sendRequest = (path) => {
-        PostWithAuth("/auth/"+path, {username:username,password:password})
+        PostWithoutAuth("/auth/"+path, {username:username,password:password})
         .then((res) => res.json())
-        .then(
-            (result) => {
-                localStorage.setItem("tokenKey",result.accessToken);
-                localStorage.setItem("refreshKey",result.refreshToken);
-                localStorage.setItem("currentUser",result.userId);
-                localStorage.setItem("username",username)
-                navigate(0);
-            }
-        )
-        .catch((err) => console.log("err", err))
+        .then((result) => {
+            localStorage.setItem("tokenKey",result.accessToken);
+            localStorage.setItem("refreshKey",result.refreshToken);
+            localStorage.setItem("currentUser",result.userId);
+            localStorage.setItem("username",username)
+            navigate(0);
+        })  
     }
+        
 
     return(
         <FormControl>
@@ -70,8 +68,6 @@ function Auth() {
                 >Login</Button>
         </FormControl>
     );
-
-
 }
 
 export default Auth;

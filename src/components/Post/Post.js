@@ -14,7 +14,8 @@ import { Link } from 'react-router-dom';
 import { Container } from '@mui/material';
 import Comment from '../Comment/Comment';
 import CommentForm from '../Comment/CommentForm';
-import { DeleteWithAuth, PostWithAuth } from '../../services/HttpService';
+import { DeleteWithAuth, GetWithoutAuth, PostWithAuth, refreshToken } from '../../services/HttpService';
+import { useNavigate } from "react-router-dom";
 
 function Post(props) {
     const {title, text, userId, username, createTime, postId, postLikes} = props;
@@ -27,7 +28,7 @@ function Post(props) {
     const [likeCount, setLikeCount] = React.useState(postLikes.length);
     const [likeId, setLikeId] = React.useState(null);
     let disabled = localStorage.getItem("currentUser") == null ? true : false;
-
+    let navigate = useNavigate();
     
     const checkLikes = () => {
         var likeControl = postLikes.find(like => ""+like.userId === localStorage.getItem("currentUser"));
@@ -44,36 +45,91 @@ function Post(props) {
 
     const saveLike = () => {
         PostWithAuth("/likes",{postId:postId, userId:localStorage.getItem("currentUser")})
-        .then((res) => res.json())
-        .then(
-            (result) => {
-                setLikeId(result.id);
+        .then((res) => {
+            if(res.ok) {
+              return res.json();
             }
-        )
-        .catch((err) => console.log("error"))
+            else {
+              refreshToken()
+              .then((res) => {
+                if(res.ok) {
+                  return res.json();
+                }
+                else {
+                  localStorage.removeItem("tokenKey");
+                  localStorage.removeItem("currentUser");
+                  localStorage.removeItem("username");
+                  localStorage.removeItem("refreshKey");
+                  navigate(0);
+                  return;
+                }
+              })
+              .then((result) => {
+                if(result != undefined) {
+                  localStorage.setItem("tokenKey", result.accessToken);
+                  saveLike();
+                }
+              })
+              .catch((err) => {
+                console.log("err", err);
+              })
+            }
+          })
+          .then((result) => {
+            console.log("saveLikeResult", result)
+            setLikeId(result.id);
+          })
+          .catch(err => console.log("err", err))
     }
     
     const deleteLike = () => {
         DeleteWithAuth("/likes/"+likeId)
-        .then((res) => res.json())
-        .catch((err) => console.log("error"))
+        .then((res) => {
+            if(res.ok) {
+            }
+            else {
+              refreshToken()
+              .then((res) => {
+                if(res.ok) {
+                  return res.json();
+                }
+                else {
+                  localStorage.removeItem("tokenKey");
+                  localStorage.removeItem("currentUser");
+                  localStorage.removeItem("username");
+                  localStorage.removeItem("refreshKey");
+                  navigate(0);
+                  return;
+                }
+              })
+              .then((result) => {
+                if(result != undefined) {
+                  localStorage.removeItem("tokenKey");
+                  localStorage.setItem("tokenKey", result.accessToken);
+                  deleteLike();
+                }
+              })
+              .catch((err) => {
+                console.log("err", err);
+              })
+            }
+          })
     }
 
     const refreshComments = () => {
-        fetch("/comments?postId="+postId)
-        .then(res => res.json())
-        .then(
-            (result) => {
-                console.log("result ", result);
-                setIsLoaded(true);
-                setCommentList(result);
-                isInitialMount.current = true;
-            },
-            (error) => {
+        GetWithoutAuth("/comments?postId="+postId)
+        .then((res) => res.json())
+        .then((result) => {
+            if(result === -1) {
                 setIsLoaded(true);
                 setError(error);
             }
-        )
+            else {
+                setIsLoaded(true);
+                setCommentList(result);
+                isInitialMount.current = true;
+            }
+        })
     }
 
     React.useEffect(() => {

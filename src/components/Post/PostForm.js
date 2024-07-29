@@ -11,21 +11,54 @@ import Alert from '@mui/material/Alert';
 import "./Post.scss";
 import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
-import { PostWithAuth } from '../../services/HttpService';
+import { PostWithAuth, refreshToken } from '../../services/HttpService';
+import { useNavigate } from "react-router-dom";
+
 
 function PostForm(props) {
     const {userId, username, refreshPosts} = props;
     const [text, setText] = React.useState("");
     const [title, setTitle] = React.useState("");
     const [isSent, setIsSent] = React.useState(false);
+    let navigate = useNavigate();
 
     const savePost = () => {
         PostWithAuth("/posts",{title:title,userId:userId,text:text})
-        .then((res) => res.json())
-        .then(() => {
-            refreshPosts();
+        .then((res) => {
+            if(res.ok) {
+                return res.json();
+            }
+            else {
+                refreshToken()
+                .then((res) => {
+                if(res.ok) {
+                    return res.json();
+                }
+                else {
+                    localStorage.removeItem("tokenKey");
+                    localStorage.removeItem("currentUser");
+                    localStorage.removeItem("username");
+                    localStorage.removeItem("refreshKey");
+                    navigate(0);
+                    return;
+                }
+                })
+                .then((result) => {
+                if(result != undefined) {
+                    localStorage.setItem("tokenKey", result.accessToken);
+                    savePost();
+                }
+                })
+                .catch((err) => {
+                console.log("err", err);
+                })
+            }
         })
-        .catch((err) => console.log("error"))
+        .then((result) => {
+            console.log("savePost result",result);
+            refreshPosts()
+        })
+        .catch(err => console.log("err", err)) 
     }
 
     const handleSubmit = () => {

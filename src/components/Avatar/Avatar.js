@@ -9,10 +9,10 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { ListItemSecondaryAction, Radio } from '@mui/material';
-import { DeleteWithAuth, GetWithAuth, PostWithAuth, PutWithAuth } from '../../services/HttpService';
-
-
+import { Link, ListItemSecondaryAction, Radio } from '@mui/material';
+import { DeleteWithAuth, GetWithAuth, PostWithAuth, PutWithAuth, refreshToken } from '../../services/HttpService';
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const style = {
     position: 'absolute',
@@ -28,43 +28,165 @@ const style = {
   
 
   function Avatar(props) {
-    const {avatarId, userId, username, countFollowed} = props;
+    const {avatarId, userId, username, countFollowed, countFollower} = props;
     const [open, setOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState(avatarId);
-    const [followCount, setFollowCount] = useState(countFollowed)
+    const [followedCount, setFollowedCount] = useState(countFollowed);
+    const [followerCount, setFollowerCount] = useState(countFollower);
     const [following , setFollowing] = useState(null);
-  
+    let navigate = useNavigate();
+
     const saveAvatar = () => {
       PutWithAuth("/users/"+ localStorage.getItem("currentUser"), {avatar: selectedValue})
-      .then(res => res.json())
-      .catch((err) => console.log(err))
+      .then((res) => {
+        if(res.ok) {
+          return res.json();
+        }
+        else {
+          refreshToken()
+          .then((res) => {
+            if(res.ok) {
+              return res.json();
+            }
+            else {
+              localStorage.removeItem("tokenKey");
+              localStorage.removeItem("currentUser");
+              localStorage.removeItem("username");
+              localStorage.removeItem("refreshKey");
+              navigate(0);
+              return;
+            }
+          })
+          .then((result) => {
+            if(result != undefined) {
+              localStorage.setItem("tokenKey", result.accessToken);
+              saveAvatar();
+            }
+          })
+          .catch((err) => {
+            console.log("err", err);
+          })
+        }
+      })
+      .then((result) => {
+
+      })
+      .catch((err) => console.log("err", err))
     }
 
     const follow = () => {
-      PostWithAuth("/follow/",{followedId:localStorage.getItem("currentUser") , followerId: selectedValue})
-      .then(res => res.json())
-      .then(() => {
-
+      console.log("userId ", userId);
+      PostWithAuth("/follow",{followedId: userId, followerId: localStorage.getItem("currentUser")})
+      .then((res) => {
+        if(res.ok) {
+          return res.json();
+        }
+        else {
+          refreshToken()
+          .then((res) => {
+            if(res.ok) {
+               res.json();
+            }
+            else {
+              localStorage.removeItem("tokenKey");
+              localStorage.removeItem("currentUser");
+              localStorage.removeItem("username");
+              localStorage.removeItem("refreshKey");
+              navigate(0);
+              return;
+            }
+          })
+          .then((result) => {
+            if(result != undefined) {
+              localStorage.setItem("tokenKey", result.accessToken);
+              return follow();
+            }
+          })
+          .catch((err) => {
+            console.log("err", err);
+          })
+        }
+      })
+      .then((result) => {
+        setFollowing(result);
+        setFollowedCount(followedCount+1);
       })
       .catch((err) => console.log(err))
     }
 
     const unfollow = () => {
-      DeleteWithAuth()
-      .then(res => res.json())
+      DeleteWithAuth("/follow/"+following.id)
+      .then((res) => {
+        if(!res.ok) {
+          refreshToken()
+          .then((res) => {
+            if(res.ok) {
+              return res.json();
+            }
+            else {
+              localStorage.removeItem("tokenKey");
+              localStorage.removeItem("currentUser");
+              localStorage.removeItem("username");
+              localStorage.removeItem("refreshKey");
+              navigate(0);
+              return;
+            }
+          })
+          .then((result) => {
+            if(result != undefined) {
+              localStorage.setItem("tokenKey", result.accessToken);
+              unfollow();
+            }
+          })
+          .catch((err) => {
+            console.log("err", err);
+          })
+        }
+      })
       .then(() => {
-
+        setFollowedCount(followedCount-1);
+        setFollowing(null);
       })
       .catch((err) => console.log(err))
     }
 
     const checkFollowing = () => {
       GetWithAuth("/follow?followedId="+ userId+"&followerId="+localStorage.getItem("currentUser"))
-      .then(res => res.json())
+      .then((res) => {
+        if(res.ok) {
+          return res.json();
+        }
+        else {
+          refreshToken()
+          .then((res) => {
+            if(res.ok) {
+              return res.json();
+            }
+            else {
+              localStorage.removeItem("tokenKey");
+              localStorage.removeItem("currentUser");
+              localStorage.removeItem("username");
+              localStorage.removeItem("refreshKey");
+              navigate(0);
+              return;
+            }
+          })
+          .then((result) => {
+            if(result != undefined) {
+              localStorage.setItem("tokenKey", result.accessToken);
+              checkFollowing();
+            }
+          })
+          .catch((err) => {
+            console.log("err", err);
+          })
+        }
+      })
       .then((result) => {
+        console.log("checkFollowing result",result);
         setFollowing(result);
       })
-      .catch((err) => console.log(err))
+      .catch(err => console.log(err))
     }
   
     const handleFollow = () => {
@@ -72,7 +194,7 @@ const style = {
     }
 
     const handleUnFollow = () => {
-
+      unfollow();
     }
   
     const handleChange = (event) => {
@@ -89,7 +211,7 @@ const style = {
     };
 
     useEffect((() => {
-      if(userId+"" !== localStorage.getItem("currentUser")) {
+      if((userId+"" !== localStorage.getItem("currentUser")) && localStorage.getItem("currentUser") != undefined) {
         checkFollowing(); 
       }
     }),[]);
@@ -116,14 +238,14 @@ const style = {
             {localStorage.getItem("currentUser") === ""+userId ? 
               <Button size="small" color="primary"  onClick={handleOpen}>
               Change Avatar
-            </Button> : ""}
-            {
-              (localStorage.getItem("currentUser") != undefined && localStorage.getItem("currentUser") != userId) ? 
+              </Button> : 
               following == undefined ?
               <Button size="small" color="primary"  onClick={handleFollow}>Follow</Button> : 
-              <Button size="small" color="primary"  onClick={handleUnFollow}>Unfollow</Button> : ""
+              <Button size="small" color="primary"  onClick={handleUnFollow}>Unfollow</Button>
             }
-            {followCount} followers
+            <br/>
+            <Link>{followerCount} followers</Link>
+            <Link>{followedCount} followeds</Link>
           </div>
         </CardActions>
       </Card>
