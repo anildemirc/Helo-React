@@ -11,14 +11,23 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import "./Post.scss";
 import { Link } from 'react-router-dom';
-import { Container } from '@mui/material';
+import { Button, Container } from '@mui/material';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import Comment from '../Comment/Comment';
 import CommentForm from '../Comment/CommentForm';
 import { DeleteWithAuth, GetWithoutAuth, PostWithAuth, refreshToken } from '../../services/HttpService';
 import { useNavigate } from "react-router-dom";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { styled } from '@mui/material/styles';
+import User from '../User/User';
+import AvatarCard from '../Avatar/AvatarCard';
 
 function Post(props) {
-    const {title, text, userId, username, createTime, postId, postLikes} = props;
+    const {title, text, userId, username, createTime, postId, postLikes, userInfo, followerCount, followedCount} = props;
     const [error, setError] = React.useState(null);
     const [isLoaded, setIsLoaded] = React.useState(false);
     const [commentList, setCommentList] = React.useState([]);
@@ -28,6 +37,7 @@ function Post(props) {
     const [likeCount, setLikeCount] = React.useState(postLikes.length);
     const [likeId, setLikeId] = React.useState(null);
     let disabled = localStorage.getItem("currentUser") == null ? true : false;
+    const [popupIsOpen, setPopupIsOpen] = React.useState(false);
     let navigate = useNavigate();
     
     const checkLikes = () => {
@@ -132,6 +142,8 @@ function Post(props) {
         })
     }
 
+
+
     React.useEffect(() => {
         checkLikes()
     },[]);
@@ -148,20 +160,41 @@ function Post(props) {
         }
     };
 
+    const HtmlTooltip = styled(({ className, ...props }) => (
+      <Tooltip {...props} classes={{ popper: className }} />
+    ))(({ theme }) => ({
+      [`& .${tooltipClasses.tooltip}`]: {
+        backgroundColor: '#ffffff',
+        color: 'rgba(0, 0, 0, 0.87)',
+        maxWidth: 300,
+        fontSize: theme.typography.pxToRem(12),
+        border: '1px solid #dadde9',
+      },
+    }));
+
     return(
         <div >
-             <Card sx={{ width: 800, margin: 2}} >
-                <CardHeader
-                    avatar={
-                    <Link to={{pathname : '/users/' + userId}} className='link'>
-                        <Avatar className='bgColor' aria-label="recipe">
-                            {username.charAt(0).toUpperCase()}
-                        </Avatar>
-                    </Link>
-                    }
-                    title={title}
-                    subheader={createTime}
-                />
+             <Card sx={{ width: 800, margin: 2, maxWidth: 800}} >
+                  <CardHeader
+                  sx={{width: 600, maxWidth: 600}}
+                        avatar={
+                          <HtmlTooltip placement="right-start"
+                            title={
+                              <React.Fragment>
+                                <AvatarCard userId={userId} username={username} userInfo={"User Info"} followerCount={followerCount} followedCount={followedCount}/>
+                              </React.Fragment>
+                            }
+                          >
+                            <Link to={{pathname : '/users/' + userId}} className='link'>
+                            <Avatar className='bgColor' aria-label="recipe">
+                                {username.charAt(0).toUpperCase()}
+                            </Avatar>
+                            </Link>
+                          </HtmlTooltip>
+                        }
+                        title={title}
+                        subheader={createTime}
+                    />
                 <CardContent>
                     <Typography variant="body2" color="text.secondary">
                     {text}
@@ -202,8 +235,6 @@ function Post(props) {
                 </Card>
         </div>
     );
-
-
 }
 
 export default Post;

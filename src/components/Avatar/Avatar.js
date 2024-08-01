@@ -13,6 +13,8 @@ import { Link, ListItemSecondaryAction, Radio } from '@mui/material';
 import { DeleteWithAuth, GetWithAuth, PostWithAuth, PutWithAuth, refreshToken } from '../../services/HttpService';
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import './Avatar.scss';
+
 
 const style = {
     position: 'absolute',
@@ -244,8 +246,8 @@ const style = {
               <Button size="small" color="primary"  onClick={handleUnFollow}>Unfollow</Button>
             }
             <br/>
-            <Link>{followerCount} followers</Link>
-            <Link>{followedCount} followeds</Link>
+            <Link to={{pathname : '/followers/'+ userId}} className='linkee'>{followerCount} following</Link>
+            <Link to={{pathname : '/following/'+ userId}} className='linkee'>{followedCount} followers</Link>
           </div>
         </CardActions>
       </Card>
@@ -287,5 +289,4 @@ const style = {
       </div>
     );
   }
-  
   export default Avatar;

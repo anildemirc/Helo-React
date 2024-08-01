@@ -50,7 +50,7 @@ function Home() {
                 {(postList != undefined && postList.length > 0) ? postList.map(post => (
                     <Post userId={post.userId} username={post.username}
                      createTime={post.createTime} title={post.title} 
-                     text={post.text} postId={post.id} postLikes={post.postLikes}></Post>
+                     text={post.text} postId={post.id} postLikes={post.postLikes} followerCount={post.userFollowerCount} followedCount={post.userFollowedCount}></Post>
                 )): ""}
             </div>
         );
