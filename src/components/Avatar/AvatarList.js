@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-import Dialog from '@mui/material/Dialog';
 import AvatarCard from './AvatarCard';
 import { Table, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
 

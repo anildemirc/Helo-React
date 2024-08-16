@@ -30,10 +30,10 @@ const style = {
   
 
   function Avatar(props) {
-    const {avatarId, userId, username, countFollowed, countFollower} = props;
+    const {avatarId, userId, username, countFollowing, countFollower} = props;
     const [open, setOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState(avatarId);
-    const [followedCount, setFollowedCount] = useState(countFollowed);
+    const [followingCount, setFollowingCount] = useState(countFollowing);
     const [followerCount, setFollowerCount] = useState(countFollower);
     const [following , setFollowing] = useState(null);
     let navigate = useNavigate();
@@ -77,8 +77,7 @@ const style = {
     }
 
     const follow = () => {
-      console.log("userId ", userId);
-      PostWithAuth("/follow",{followedId: userId, followerId: localStorage.getItem("currentUser")})
+      PostWithAuth("/follow",{followingId: userId, followerId: localStorage.getItem("currentUser")})
       .then((res) => {
         if(res.ok) {
           return res.json();
@@ -111,7 +110,7 @@ const style = {
       })
       .then((result) => {
         setFollowing(result);
-        setFollowedCount(followedCount+1);
+        setFollowingCount(followingCount+1);
       })
       .catch((err) => console.log(err))
     }
@@ -146,49 +145,21 @@ const style = {
         }
       })
       .then(() => {
-        setFollowedCount(followedCount-1);
+        setFollowingCount(followingCount-1);
         setFollowing(null);
       })
       .catch((err) => console.log(err))
     }
 
     const checkFollowing = () => {
-      GetWithAuth("/follow?followedId="+ userId+"&followerId="+localStorage.getItem("currentUser"))
-      .then((res) => {
-        if(res.ok) {
-          return res.json();
-        }
-        else {
-          refreshToken()
-          .then((res) => {
-            if(res.ok) {
-              return res.json();
-            }
-            else {
-              localStorage.removeItem("tokenKey");
-              localStorage.removeItem("currentUser");
-              localStorage.removeItem("username");
-              localStorage.removeItem("refreshKey");
-              navigate(0);
-              return;
-            }
-          })
-          .then((result) => {
-            if(result != undefined) {
-              localStorage.setItem("tokenKey", result.accessToken);
-              checkFollowing();
-            }
-          })
-          .catch((err) => {
-            console.log("err", err);
-          })
-        }
-      })
+      debugger;
+      GetWithAuth("/follow?userId="+ userId+"&followerId="+localStorage.getItem("currentUser"))
+      .then((res) => res.json())
       .then((result) => {
+        debugger;
         console.log("checkFollowing result",result);
         setFollowing(result);
-      })
-      .catch(err => console.log(err))
+      }).catch(err => console.log(err))
     }
   
     const handleFollow = () => {
@@ -246,8 +217,8 @@ const style = {
               <Button size="small" color="primary"  onClick={handleUnFollow}>Unfollow</Button>
             }
             <br/>
-            <Link to={{pathname : '/followers/'+ userId}} className='linkee'>{followerCount} following</Link>
-            <Link to={{pathname : '/following/'+ userId}} className='linkee'>{followedCount} followers</Link>
+            <Link to={{pathname : '/followers/'+ userId}} className='linkee'>{followingCount} following</Link>
+            <Link to={{pathname : '/following/'+ userId}} className='linkee'>{followerCount} followers</Link>
           </div>
         </CardActions>
       </Card>

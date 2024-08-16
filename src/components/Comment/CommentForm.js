@@ -22,10 +22,11 @@ function CommentForm(props) {
     const saveComment = () => {
         PostWithAuth("/comments",{postId:postId, userId:userId, text:text})
         .then((res) => {
+          debugger;
             if(res.ok) {
               return res.json();
             }
-            else {
+            else if(res.status == 401) {
               refreshToken()
               .then((res) => {
                 if(res.ok) {

@@ -34,17 +34,22 @@ function Post(props) {
     const [expanded, setExpanded] = React.useState(false);
     const [isLiked, setIsLiked] = React.useState(false)
     const isInitialMount = React.useRef(true);
-    const [likeCount, setLikeCount] = React.useState(postLikes.length);
+    const [likeCount, setLikeCount] = React.useState(postLikes != undefined ? postLikes.length : 0);
     const [likeId, setLikeId] = React.useState(null);
     let disabled = localStorage.getItem("currentUser") == null ? true : false;
     const [popupIsOpen, setPopupIsOpen] = React.useState(false);
     let navigate = useNavigate();
     
     const checkLikes = () => {
-        var likeControl = postLikes.find(like => ""+like.userId === localStorage.getItem("currentUser"));
-        if(likeControl != null) {
-            setLikeId(likeControl.id);
-            setIsLiked(true);
+        if (likeCount == undefined || likeCount == 0) {
+          setIsLiked(false);
+        }
+        else {
+          var likeControl = postLikes.find(like => ""+like.userId === localStorage.getItem("currentUser"));
+          if(likeControl != null) {
+              setLikeId(likeControl.id);
+              setIsLiked(true);
+          }
         }
     }
 

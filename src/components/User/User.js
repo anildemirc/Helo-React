@@ -22,7 +22,7 @@ function User() {
 
     return(
         <div style= {{display:'flex'}}>
-            {user? <Avatar avatarId = {user.avatarId} userId= {userId} username= {user.username} countFollowed={user.countFollowed} countFollower={user.countFollower} /> : ""}
+            {user? <Avatar avatarId = {user.avatarId} userId= {userId} username= {user.username} countFollowing={user.countFollowing} countFollower={user.countFollower} /> : ""}
             <UserActivity userId={userId}></UserActivity>
         </div>
     );

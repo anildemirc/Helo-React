@@ -26,7 +26,10 @@ function Auth() {
 
     const sendRequest = (path) => {
         PostWithoutAuth("/auth/"+path, {username:username,password:password})
-        .then((res) => res.json())
+        .then((res) => {
+            debugger;
+            return res.json();
+        })
         .then((result) => {
             localStorage.setItem("tokenKey",result.accessToken);
             localStorage.setItem("refreshKey",result.refreshToken);
