@@ -110,7 +110,7 @@ function NavBar() {
                     <MenuIcon />
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    <Link to="/" className="link">Quest App</Link>
+                    <Link to="/" className="link">Helo App</Link>
                 </Typography>
                 <Typography variant="h6" component="div">
                     {localStorage.getItem("currentUser") == null ? <Link to="/auth" className="link">Login/Register</Link> :
